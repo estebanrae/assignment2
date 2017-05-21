@@ -31,6 +31,13 @@ public class RunningGame extends Game {
 	public RunningGame(){
 		this(Reader.readGames(1));
 	}
+	/**
+	 * This method adds a random sprinter to the current cycling game and returns the 
+	 * reference to that athlete.
+	 * @return
+	 * @throws GameFullException
+	 * @throws SQLException
+	 */
 	public CanRun addSprinter() throws GameFullException, SQLException{
 		Random rand = new Random();
 
@@ -49,7 +56,15 @@ public class RunningGame extends Game {
 		}
 		return (CanRun) randomAthlete;		
 	}
-
+	/**
+	 * This method checks to see if the athlete that will be added already exists. And
+	 * if not it will add it.
+	 * @param current
+	 * @return
+	 * @throws DuplicateAthleteException
+	 * @throws GameFullException
+	 * @throws WrongTypeException
+	 */
 	public CanRun addSprinter(Athlete current) throws DuplicateAthleteException, GameFullException, WrongTypeException{
 		if(!(current instanceof CanRun))
 			throw new WrongTypeException();	

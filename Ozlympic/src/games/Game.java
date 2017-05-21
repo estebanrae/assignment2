@@ -74,11 +74,11 @@ public abstract class Game {
 		this.competitors = competitors;
 	}
 	/**
-	 * Accessor for hasRun variable
-	 * @return a value indicating if the game has run 
-	 * @throws DuplicateAthleteException 
+	 * Adds a new competitor to the current game.
+	 * @param competitor
+	 * @throws GameFullException
+	 * @throws DuplicateAthleteException
 	 */
-
 	public void addCompetitor(Athlete competitor) throws GameFullException, DuplicateAthleteException{
 		boolean dup = false;
 		for(int i = 0; i< 8; i++){
@@ -106,5 +106,38 @@ public abstract class Game {
 		}else{
 			throw new DuplicateAthleteException();
 		}
+	}
+	/**
+	 * This method orders the array of competitors according to their place in the 
+	 * current race.
+	 */
+	public void orderCompetitors(){
+		Athlete aux = null;
+		int top = 0;
+		int j;
+		for(j=0; j < competitors.length -1; j++ )
+		{
+			if(competitors[j] == null){
+				break;
+			}
+			top++;
+		}
+		
+		boolean flag = true;
+		int temp;   
+		while ( flag )
+		{
+			flag= false;
+			for(j=0; j < top - 1; j++ )
+			{
+				if ( competitors[j].getPlace() > competitors[j+1].getPlace() )  
+				{
+					aux = competitors[ j ];
+					competitors[ j ] = competitors[ j+1 ];
+					competitors[ j+1 ] = aux;
+					flag = true;
+				} 
+			} 
+		} 
 	}
 }

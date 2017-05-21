@@ -22,7 +22,13 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import participants.Athlete;
 import storage.Reader;
-
+/** 
+ * The controller for the Race animations. This will display an animation of all the
+ * athletes that are competing and will allocate their results at the bottom of the +
+ * screen.
+ * @author estebanramirez
+ *
+ */
 public class RaceController {
 	private Game currentGame;
 	private int exCnt;
@@ -39,7 +45,12 @@ public class RaceController {
 	public void initialize(){
 
 	}
-
+	/**
+	 * Initializes the data according to how many athletes are participating and the type 
+	 * of game that will run.
+	 * @param current
+	 * @throws ImageNotFoundException
+	 */
 	public void initData(Game current) throws ImageNotFoundException{
 		this.currentGame = current;
 		exCnt = 8;
@@ -47,7 +58,6 @@ public class RaceController {
 			if(currentGame.getCompetitors()[i] == null)
 				exCnt--;
 		}
-		System.out.println(exCnt);
 		Image img;
 		if(currentGame instanceof RunningGame){
 			img = new Image("file:resources/running_image.png");
@@ -58,6 +68,9 @@ public class RaceController {
 		}else{
 			throw new ImageNotFoundException();
 		}
+		/*
+		 * This loop generates all the tracks in which the athletes will compete.
+		 */
 		for(int jj = 1; jj <= exCnt; jj++){
 
 			StackPane track = new StackPane();
@@ -81,12 +94,20 @@ public class RaceController {
 		}
 
 	}
+	/**
+	 * Generates a particular animation for each athlete on its track, and uses the 
+	 * parallel transition to animate all the tracks at the same time.
+	 */
 	public void startAnimation(){
+		System.out.println("Race has started!!!");
 		ParallelTransition parallel = new ParallelTransition();
 		int ii = 1;
+		/*
+		 * This loop generates the animation for all athletes according to their
+		 * speed parameter.
+		 */
 		for (Athlete comp : currentGame.getCompetitors()){
 			if(comp != null){
-				System.out.println(comp);
 				// Duration has to be: Max Duration = Slowest time = 5 secs. 
 				// Min Duration = Fastest time = 2 secs. 
 				// Duration is inversly proportional to speed: Duration = -2 * speed + 5. 
@@ -122,7 +143,12 @@ public class RaceController {
 
 		parallel.play();
 	}
-	
+	/**
+	 * This method is called every time an athlete's animation finishes, indicating that 
+	 * they have finished the race. This method assigns the points to each athlete and 
+	 * stores the results.
+	 * @param finisher
+	 */
 	public void retrieveResults(Athlete finisher){
 		place++;
 		if(place == 1){
@@ -135,6 +161,8 @@ public class RaceController {
 		finisher.setPlace(place);
 		Reader.updateAthlete(finisher);
 		finisher.compete(currentGame);
+		System.out.println("Atlhete: " + finisher.getName() + " has finished the race");
+		System.out.println("Time: " + finisher.getCurrent_score());
 		Label text = new Label(finisher.getName() + ", time: " 
 								+ (Math.round(finisher.getCurrent_score() * 1000.0) / 1000.0) 
 								+ " secs. " + finisher.getPoints() + " points in total.");
@@ -148,6 +176,7 @@ public class RaceController {
 	}
 	
 	public void finishedRace(){
+		System.out.println("The game has finished");
 		Reader.storeGame(currentGame);
 		shadowbox.setVisible(true);
 	}

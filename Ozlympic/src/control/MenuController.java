@@ -10,7 +10,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
-
+/**
+ * Holds the event handlers and actions for all interaction in the main menu.
+ * @author estebanramirez
+ *
+ */
 public class MenuController {
 	@FXML
 	private Button op_btn1;
@@ -25,6 +29,15 @@ public class MenuController {
 	@FXML
 	private Button add_btn;
 	
+	public void initialize(){
+		System.out.println("Main Menu displayed.");
+	}
+	/**
+	 * Sets the new stage to the main lobby, according to which button was pressed, it
+	 * will generate a different type of game.
+	 * @param e
+	 * @throws GenericGameException
+	 */
 	public void goToLobby(ActionEvent e) throws GenericGameException{
 		Stage lobby = new Stage();
 		FXMLLoader root;
@@ -46,6 +59,10 @@ public class MenuController {
 			lobby.setScene(sc1);
 			lobby.setResizable(false);
 			lobby.setTitle("Lobby");
+			lobby.setOnCloseRequest(ae ->{
+				controller.getCounter().stop();
+			});
+			System.out.println("New game created, Lobby displayed.");
 			lobby.show();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -59,7 +76,10 @@ public class MenuController {
 		}
 
 	}
-	
+	/**
+	 * Displays the list of results for each race that has run.
+	 * @param ae
+	 */
 	public void raceResults(ActionEvent ae){
 		try {
 			Stage resultStage = new Stage();
@@ -78,7 +98,10 @@ public class MenuController {
 		}
 		
 	}
-	
+	/**
+	 * Displays the total points per athlete.
+	 * @param ae
+	 */
 	public void totalPoints(ActionEvent ae){
 		try {
 			Stage resultStage = new Stage();

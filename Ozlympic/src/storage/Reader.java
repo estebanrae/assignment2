@@ -1,11 +1,20 @@
 package storage;
 
 import participants.Athlete;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import exceptions.DuplicateAthleteException;
+import exceptions.GameFullException;
 import exceptions.GenericGameException;
 import games.CycleGame;
 import games.Game;
@@ -13,75 +22,224 @@ import games.RunningGame;
 import games.SwimGame;
 import participants.Cyclist;
 import participants.Official;
+import participants.Participant;
 import participants.Sprinter;
 import participants.SuperAthlete;
 import participants.Swimmer;
 
+/**
+ * Description: This class implements all the necessary methods to read and store data 
+ * about the athletes and the races both in a database and in a file.
+ * The file names are the following:
+ * participants.txt -> stores data about all participants
+ * gameResults.txt -> stores data about the games
+ *  
+ * @author estebanramirez
+ *
+ */
+
 public class Reader {
-	static public Connection c = null;
+	static public Connection c;
 
-	public static Athlete[] readAthletes(String order) throws SQLException{
+	/**
+	 * Description: Reads athletes from an embedded database, takes into account an
+	 * order parameter. If an exception is thrown or if the total number of rows read
+	 * from the database is zero, this function will call a file reading function to read
+	 * the data from a text file instead.
+	 * @param order - can be any parameter of the database table "participants"
+	 * 			(ppt_id, name, age, state, points, type)".
+	 * @return the array of all athletes 
+	 */
+	public static Athlete[] readAthletes(String order) {
 		LinkedList<Athlete> allAthletes = new LinkedList<Athlete>();
-
+		Athlete[] athletes = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
-		c.setAutoCommit(false);
-		stmt = c.prepareStatement("SELECT * FROM participants ORDER BY " + order + " ;");
-		rs = stmt.executeQuery();
-		int cnt = 0;
-		while( rs.next()){
-			if(rs.getInt("type") == 1){
-				allAthletes.add(new Sprinter(rs.getString("ppt_id"), 
-						rs.getString("name"), 
-						rs.getInt("age"),
-						rs.getString("state"), 
-						rs.getInt("points")));
-			}else if(rs.getInt("type") == 2){
-				allAthletes.add(new Swimmer(rs.getString("ppt_id"), 
-						rs.getString("name"), 
-						rs.getInt("age"),
-						rs.getString("state"),
-						rs.getInt("points")));
-			}else if(rs.getInt("type") == 3){
-				allAthletes.add(new Cyclist(rs.getString("ppt_id"), 
-						rs.getString("name"), 
-						rs.getInt("age"),
-						rs.getString("state"),
-						rs.getInt("points")));
-			}else if(rs.getInt("type") == 4){
-				allAthletes.add(new SuperAthlete(rs.getString("ppt_id"), 
-						rs.getString("name"), 
-						rs.getInt("age"),
-						rs.getString("state"),
-						rs.getInt("points")));
-			}else{
-				continue;
+		try {
+			stmt = c.prepareStatement("SELECT * FROM participants ORDER BY " + order + " ;");
+			rs = stmt.executeQuery();
+			int cnt = 0;
+			/* Goes through the resultSet and stores the values in an object subclass of
+			 *  Athlete (Sprinter, Swimmer, Cyclist or SuperAthlete).
+			 */
+			while( rs.next()){
+				if(rs.getInt("type") == 1){
+					allAthletes.add(new Sprinter(rs.getString("ppt_id"), 
+							rs.getString("name"), 
+							rs.getInt("age"),
+							rs.getString("state"), 
+							rs.getInt("points")));
+				}else if(rs.getInt("type") == 2){
+					allAthletes.add(new Swimmer(rs.getString("ppt_id"), 
+							rs.getString("name"), 
+							rs.getInt("age"),
+							rs.getString("state"),
+							rs.getInt("points")));
+				}else if(rs.getInt("type") == 3){
+					allAthletes.add(new Cyclist(rs.getString("ppt_id"), 
+							rs.getString("name"), 
+							rs.getInt("age"),
+							rs.getString("state"),
+							rs.getInt("points")));
+				}else if(rs.getInt("type") == 4){
+					allAthletes.add(new SuperAthlete(rs.getString("ppt_id"), 
+							rs.getString("name"), 
+							rs.getInt("age"),
+							rs.getString("state"),
+							rs.getInt("points")));
+				}else{
+					continue;
+				}
+				cnt++;
 			}
-			cnt++;
-		}
 
-		if(cnt == 0){
-			readAthletesFromFile();
+			if(cnt == 0){
+				athletes = readAthletesFromFile();
+			}else{
+				athletes = new Athlete[allAthletes.size()];
+				allAthletes.<Athlete>toArray(athletes);
+			}
+
+			return athletes;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return readAthletesFromFile();
+		}finally{	
+			try {
+				rs.close();
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		Athlete[] athletes = new Athlete[allAthletes.size()];
-		allAthletes.<Athlete>toArray(athletes);
-		rs.close();
-		stmt.close();
-		c.close();
-		return athletes;
 	}
-
+	/**
+	 * Description: Reads data from the text file.
+	 * @return
+	 */
 	public static Athlete[] readAthletesFromFile(){
-		System.out.println("ERROR");
+		BufferedReader input = null;
+		LinkedList<Athlete> allAthletes = new LinkedList<Athlete>();
 		Athlete[] athletes = null;
-		return athletes;
+		try {
+			input = new BufferedReader(new FileReader("files/participants.txt"));
+			String next;
+			while((next = input.readLine()) != null){
+
+				String[] arr = next.split(",");
+				String id = arr[0].trim();
+				String type = arr[1].trim();
+				String name = arr[2].trim();
+				int age = Integer.parseInt(arr[3].trim());
+				String state = arr[4].trim();
+				int points = Integer.parseInt(arr[5].trim());
+				Athlete curr = null;
+				if(id.length() > 0 && type.length() > 0 
+						&& name.length() > 0 && state.length() > 0
+						&& age > 0){
+					if(type.equals("sprinter")){
+						curr = new Sprinter(id, name, age, state, points);
+					}else if(type.equals("swimmer")){
+						curr = new Swimmer(id, name, age, state, points);
+					}else if(type.equals("cyclist")){
+						curr = new Cyclist(id, name, age, state, points);
+					}else if(type.equals("super")){
+						curr = new SuperAthlete(id, name, age, state, points);
+					}else{
+						continue;
+					}
+					if(!checkForDups(athletes, curr)){
+						allAthletes.add(curr);
+						athletes = new Athlete[allAthletes.size()];
+						allAthletes.<Athlete>toArray(athletes);
+					}
+				}
+			}
+			return athletes;
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	/**
+	 * Descrption: Checks if the participant "check" exists in the array "arr" by comparing
+	 * its IDs.
+	 * @param arr
+	 * @param check
+	 * @return
+	 */
+	public static boolean checkForDups(Participant[] arr, Participant check){
+		if(arr == null)
+			return false;
+		for(Participant x: arr){
+			if(x.getID().equals(check.getID())){
+				return true;
+			}
+		}
+		return false;
 	}
 
+	/**
+	 * Description: Different from an update database query, using this function we can
+	 * overwrite the whole file. 
+	 * @param athletes - the list of athletes to be stored in the file.
+	 */
+	public static void storeAthletesInFile(Athlete[] athletes){
+		FileWriter writer = null;
+		Official[] allOfficials = readOfficialsFromFiles();
+		try {
+			writer = new FileWriter("files/participants.txt");
+			String outstr = "";
+			for(Athlete a : athletes){
+
+				String type = "";
+				if(a instanceof Sprinter)
+					type = "sprinter";
+				if(a instanceof Swimmer)
+					type = "swimmer";
+				if(a instanceof Cyclist)
+					type = "cyclist";
+				if(a instanceof SuperAthlete)
+					type = "super";
+
+				outstr = outstr.concat(a.getID() + ", " + type + ", " + a.getName()
+				+ ", " + a.getAge() + ", " + a.getState()
+				+ ", " + a.getPoints() + "\n");
+			}
+
+			writer.write(outstr);
+
+			for(Official o : allOfficials ){
+				writer.write(o.getID() + ", official, " + o.getName()
+				+ ", " + o.getAge() + ", " + o.getState() + ", 0\n");
+			}
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Description: Initializes the database. If the tables already exist this method 
+	 * will throw an exception, if the tables don't exist it will create them and 
+	 * populate them by calling the setAthletes function. Note that if the database is 
+	 * previously created created and populated this function would not be necessary
+	 * and neither would the setAthletes() function.  
+	 */
 	public static void initDB(){
 		try {
 			Class.forName("org.sqlite.JDBC");
 			c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
+			c.setAutoCommit(false);
 			Statement stmt = null;
 			stmt = c.createStatement();
 			String sql = "CREATE TABLE participants " +
@@ -103,9 +261,8 @@ public class Reader {
 					" place         DOUBLE    NOT NULL)"; 
 			stmt.executeUpdate(sql);
 			stmt.close();
-			c.close();
 
-
+			
 			setAthletes("r1", "Max", 21, "VIC", 1);
 			setAthletes("r2", "Rene", 30, "ACT", 1);
 			setAthletes("r3", "John", 24, "QLD", 1);
@@ -120,9 +277,9 @@ public class Reader {
 			setAthletes("s2", "Claudia", 27, "NT", 2);
 			setAthletes("s3", "Mary", 31, "VIC", 2);
 			setAthletes("s4", "Susan", 24, "QLD", 2);
-			setAthletes("s5", "Caroline", 29, "VIC", 2);
+			setAthletes("s5", "Christine", 29, "VIC", 2);
 			setAthletes("s6", "James", 24, "VIC", 2);
-			setAthletes("s7", "Nick", 23, "SA", 2);
+			setAthletes("s7", "Nate", 23, "SA", 2);
 			setAthletes("s8", "Pepe", 25, "NT", 2);
 			setAthletes("s9", "Eduardo", 22, "VIC", 2);
 			setAthletes("s10", "Renata", 21, "TAS", 2);
@@ -158,7 +315,7 @@ public class Reader {
 			setAthletes("o8", "Ray", 32, "VIC", 5);
 			setAthletes("o9", "Alan", 36, "SA", 5);
 			setAthletes("o10", "Peter", 29, "ACT", 5);
-
+			 
 
 
 
@@ -168,66 +325,102 @@ public class Reader {
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 * closes the connection to the database
+	 */
+	public static void closeDB(){
+		try {
+			c.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * Description: Stores a participant in the database.
+	 * @param id
+	 * @param name
+	 * @param age
+	 * @param state
+	 * @param type
+	 */
 	public static void setAthletes(String id, String name, int age, String state, int type){
 		Statement stmt = null;
 		try {
-			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
-			c.setAutoCommit(false);
 			stmt = c.createStatement();
 			String sql = "INSERT INTO participants (ppt_id,name,age,state,points,type) " +
 					"VALUES ('" + id + "', '" + name + "', " + age + ", '" + state + "', 0, " + type + " );"; 
 			stmt.executeUpdate(sql);
 			c.commit();
-			stmt.close();
-			c.close();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally{
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
-
+	/**
+	 * Description: Updates the points of a participant. Also calls the function to update
+	 * the text file so that both the database and the files are synchronized.
+	 * @param athlete -> The athlete to update.
+	 */
 	public static void updateAthlete(Athlete athlete){
 		Statement stmt = null;
 		try {
-			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
-			c.setAutoCommit(false);
+			updateAthleteInFile(athlete);
 			stmt = c.createStatement();
 			String sql = "UPDATE participants SET  points = " + athlete.getPoints()
 			+ " WHERE ppt_id = '" + athlete.getID() + "' ;"; 
 			stmt.executeUpdate(sql);
 			c.commit();
-			stmt.close();
-			c.close();
-			updateAthleteInFile(athlete);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally{
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 	}
-
+	/**
+	 * Updates the athletes in the file by reading all athletes in the file, finding
+	 * the current athlete to update, and then rewriting the file.
+	 * @param athlete
+	 */
 	public static void updateAthleteInFile(Athlete athlete){
+		Athlete[] athletes = null;
+		athletes = readAthletes("name");
+
+		for(Athlete a: athletes){
+			if(a.getID().equals(athlete.getID())){
+				a.setPoints(athlete.getPoints());
+			}
+		}
+		storeAthletesInFile(athletes);
 
 	}
-
+	/** 
+	 * Description: Stores the results of a game into the database. Also calls the 
+	 * method to store the data in the text file.
+	 * @param game
+	 */
 	public static void storeGame(Game game){
-		Connection c = null;
 		String gameId = game.getID();
 		String offId = game.getOfficial().getID();
 		Statement stmt = null;
 		try {
-			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
-			c.setAutoCommit(false);
+			storeGameInFile(game);
+			
 			stmt = c.createStatement();
 
 
@@ -245,44 +438,72 @@ public class Reader {
 				}
 			}
 			c.commit();
-			stmt.close();
-			c.close();
-			storeGameInFile(game);
-		} catch (ClassNotFoundException e) {
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (SQLException e) {
+		}finally{
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	/**
+	 * Stores the game results in the specified file. Also generates a timestamp that
+	 * will be shown in the file.
+	 * @param game
+	 */
+	public static void storeGameInFile(Game game){
+		FileWriter writer = null;
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		try {
+			writer = new FileWriter("files/gameResults.txt", true);
+			String outstr = "";
+			outstr = outstr.concat(game.getID() + ", " 
+					+ game.getOfficial().getID() + ", " +  timestamp + "\n"); 
+			game.orderCompetitors();
+			for(Athlete a : game.getCompetitors()){
+				if(a != null){
+					outstr = outstr.concat(a.getID() + ", " + a.getCurrent_score()
+					+ ", " + a.getPlace() + "\n");
+				}
+			}
+			outstr = outstr.concat("\n");
+			writer.write(outstr);
+			writer.close();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
-	public static void storeGameInFile(Game game){
-
-	}
-
+	/**
+	 * Reads all games from the database and stores them in a Game class array as their
+	 * defined subclass. To find the type of game that was stored in the DB, the game
+	 * ID was analyzed.
+	 * @return
+	 */
 	public static Game[] readGames(){
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		LinkedList<Game> allGames = new LinkedList<Game>();
 		try {
-			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
-
-			c.setAutoCommit(false);
 			String[] idCodes = {"rg", "sg", "cg"};
+			int cnt2 = 0;
 			for(String code: idCodes){
 				stmt = c.prepareStatement("SELECT * FROM games g "
 						+ "LEFT JOIN participants p ON g.off_id = p.ppt_id WHERE game_id LIKE '" + code + "%';");
 				rs = stmt.executeQuery();
+				
 				while( rs.next()){
 					Athlete[] competitors = new Athlete[8];
 					Official off = null;
 					stmt = c.prepareStatement("SELECT * FROM games_ppt gp LEFT JOIN participants p"
 							+ " ON gp.ppt_id = p.ppt_id WHERE game_id LIKE '" 
 							+ rs.getString("game_id") + "' ORDER BY place ;");
-					//stmt = c.prepareStatement("SELECT * FROM games_ppt;");
+
 					rs2 = stmt.executeQuery();
 					int cnt = 0;
 					while( rs2.next()){
@@ -335,35 +556,110 @@ public class Reader {
 						allGames.add(new CycleGame(rs.getString("game_id"), 
 								off, competitors));
 					}
+					//cnt2++;
 				}
 			}
 			rs.close();
+			rs2.close();
 			stmt.close();
-			c.close();
+			if(cnt2 == 0){
+				return readGamesFromFile();
+			}
 			Game[] games = new Game[allGames.size()];
 			return (Game[]) allGames.<Game>toArray(games);
 		} catch (SQLException e) {
 
 			e.printStackTrace();
 			return readGamesFromFile();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return readGamesFromFile();
+		}finally{
+			try {
+				rs.close();
+				rs2.close();
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 
 	}
-
+	/**
+	 * Reads the games from file.
+	 * @return
+	 */
 	public static Game[] readGamesFromFile(){
+		BufferedReader input = null;
+		LinkedList<Game> allGames = new LinkedList<Game>();
 		Game[] games = null;
-		return games;
+		try {
+			input = new BufferedReader(new FileReader("files/gameResults.txt"));
+			String next;
+			boolean start = true;
+			Game aux = null;
+			while((next = input.readLine()) != null){
+				String[] arr = next.split(",");
+				if(start){
+					Official curOf = null;
+					for(Official o : readOfficials()){
+						
+						if(o.getID().equals(arr[1].trim())){
+							curOf = o;
+						}
+					}
+					if(arr[0].trim().toCharArray()[0] == 'r'){
+						aux = new RunningGame(arr[0].trim(), curOf);
+					}else if(arr[0].toCharArray()[0] == 's'){
+						aux = new SwimGame(arr[0].trim(), curOf);
+					}else if(arr[0].toCharArray()[0] == 'c'){
+						aux = new CycleGame(arr[0].trim(), curOf);
+					}
+					start = false;
+				}else if (next.equals("")){
+					allGames.add(aux);
+					aux = null;
+					start = true;
+				}else{
+					Athlete currentAthlete = null;
+					for(Athlete a : readAthletes("name")){
+						if(a.getID().equals(arr[0].trim())){
+							currentAthlete = a;
+						}
+					}
+					currentAthlete.setCurrent_score(Double.parseDouble(arr[1].trim()));
+					currentAthlete.setPlace(Integer.parseInt(arr[2].trim()));
+					try {
+						aux.addCompetitor(currentAthlete);
+					} catch (GameFullException | DuplicateAthleteException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			games = new Game[allGames.size()];
+			allGames.<Game>toArray(games);
+			return games;
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
+	/**
+	 * Reads the games that belong to a specific category, checks the database to find 
+	 * all games of that category, and returns the next id available for that game.
+	 * @param i
+	 * @return
+	 */
 	public static String readGames(int i){
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		try {
-			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
-			c.setAutoCommit(false);
 			String idCode = "";
 			if(i == 1){
 				idCode = "rg";
@@ -376,6 +672,7 @@ public class Reader {
 			stmt = c.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			int ids = 0;
+			int cnt = 0;
 			while( rs.next()){
 				Pattern p = Pattern.compile("\\d");
 				Matcher set  = p.matcher(rs.getString("game_id"));
@@ -386,65 +683,182 @@ public class Reader {
 				if(tmp > ids){
 					ids = tmp;
 				}
+				cnt ++;
 			}
-			rs.close();
-			stmt.close();
-			c.close();
-			return idCode + (ids + 1);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return readGamesFromFiles(i);
+			if(cnt == 0){
+				return readGamesFromFiles(i);
+			}else{
+				return idCode + (ids + 1);
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return readGamesFromFiles(i);
+		}finally{
+			try {
+				rs.close();
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
-
-
 	}
+	/**
+	 * Reads the games that belong to a specific category, checks the file to find 
+	 * all games of that category, and returns the next id available for that game.
+	 * @param i
+	 * @return
+	 */
 	public static String readGamesFromFiles(int i){
-		return "";
-	}
+		BufferedReader input = null;
+		LinkedList<Game> allGames = new LinkedList<Game>();
+		Game[] games = null;
+		String idCode = "";
+		if(i == 1){
+			idCode = "rg";
+		}else if( i == 2 ){
+			idCode = "sg";
+		}else if( i == 3 ){
+			idCode = "cg";
+		}
+		int ids = 0;
+		try {
+				input = new BufferedReader(new FileReader("files/gameResults.txt"));
+				String next;
+				boolean start = true;
+				Game aux = null;
+				while((next = input.readLine()) != null){
+					String[] arr = next.split(",");
+					if(start){
+						Pattern p = Pattern.compile("\\d");
+						Matcher set  = p.matcher(arr[0].trim());
+						int tmp = 0;
+						if(set.find(1)){
+							tmp = Integer.parseInt(set.group(0));
+						}
+						if(tmp > ids){
+							ids = tmp;
+						}
+						start = false;
+					}else if (next.equals("")){
+						allGames.add(aux);
+						aux = null;
+						start = true;
+					}
+				}
+			return idCode + (ids + 1);
 
+		} catch (FileNotFoundException e) {
+			return idCode + (ids + 1);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	/**
+	 * Reads the officials from the database
+	 * @return
+	 */
 	public static Official[] readOfficials(){
-		Official[] offArray = new Official[100];
+		LinkedList<Official> allOfficials = new LinkedList<Official>();
+		Official[] officials = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		try {
-			c = DriverManager.getConnection("jdbc:sqlite:ozlympic.db");
-			c.setAutoCommit(false);
 			stmt = c.prepareStatement("SELECT * FROM participants WHERE type = 5;");
 			rs = stmt.executeQuery();
 			int cnt = 0;
 			while( rs.next()){
 				if(rs.getInt("type") == 5){
-					offArray[cnt] = new Official(rs.getString("ppt_id"), 
+					allOfficials.add(new Official(rs.getString("ppt_id"), 
 							rs.getString("name"), 
 							rs.getInt("age"),
-							rs.getString("state"));
+							rs.getString("state")));
 				}else{
 					continue;
 				}
 				cnt++;
 			}
-
-			rs.close();
-			stmt.close();
-			c.close();
-
-			return offArray;
+			if(cnt == 0){
+				return readOfficialsFromFiles();
+			}else{
+				officials = new Official[allOfficials.size()];
+				allOfficials.<Official>toArray(officials);
+				return officials;
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return readOfficialsFromFiles();
+		}finally{
+			try {
+				rs.close();
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 	}
-
+	/**
+	 * Reads the officials from the participants file.
+	 * @return
+	 */
 	private static Official[] readOfficialsFromFiles(){
+		BufferedReader input = null;
+		LinkedList<Official> allOfficials = new LinkedList<Official>();
 		Official[] officials = null;
-		return officials;
+		try {
+			input = new BufferedReader(new FileReader("files/participants.txt"));
+			String next;
+			while((next = input.readLine()) != null){
+				String[] arr = next.split(",");
+				String id = arr[0].trim();
+				String type = arr[1].trim();
+				String name = arr[2].trim();
+				int age = Integer.parseInt(arr[3].trim());
+				String state = arr[4].trim();
+				Official curr = null;
+				if(id.length() > 0 && type.length() > 0 
+						&& name.length() > 0 && state.length() > 0
+						&& age > 0){
+
+					if(type.equals("official")){
+						curr = new Official(id, name, age, state);
+					}else{
+						continue;
+					}
+					if(!checkForDups(officials, curr)){
+						allOfficials.add(curr);
+						officials = new Official[allOfficials.size()];
+						allOfficials.<Official>toArray(officials);
+					}
+				}
+			}
+			return officials;
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
+	/**
+	 * Creates a new game according to the option specified.
+	 * @param option
+	 * @return
+	 * @throws GenericGameException
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	static public Game createNewGame(int option) throws GenericGameException, ClassNotFoundException, SQLException{
 		if(option == 1){
 			return new RunningGame();	

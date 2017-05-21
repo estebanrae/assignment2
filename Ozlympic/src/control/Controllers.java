@@ -9,16 +9,25 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import storage.Reader;
-
+/**
+ * Description: This is the controller that holds the event handlers and initialization
+ * of the primary stage.
+ * @author estebanramirez
+ *
+ */
 public class Controllers {
 	@FXML
 	private Button btn1;
 	
 	
 	public void initialize(){
+		System.out.println("Game has started");
 		Reader.initDB();
 	}
-	
+	/**
+	 * Generates the scene for the main menu and sets it in the primary stage.
+	 * @param e -> the event that triggers this action.
+	 */
 	public void goToMain(ActionEvent e){
 		Stage primary;
 		Parent root;
@@ -30,6 +39,9 @@ public class Controllers {
 				sc1.getStylesheets().add(getClass().getResource("/graphics/Scene_2.css").toExternalForm());
 				primary.setScene(sc1);
 				primary.setTitle("Ozlympic Games");
+				primary.setOnCloseRequest(ex ->{
+					Reader.closeDB();
+				});
 		        primary.show();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block

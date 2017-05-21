@@ -38,11 +38,16 @@ import participants.Sprinter;
 import participants.SuperAthlete;
 import participants.Swimmer;
 import storage.Reader;
-
+/**
+ * Description: Holds all the interactions and event handlers that happen in the Lobby 
+ * stage. 
+ * @author estebanramirez
+ *
+ */
 public class ControlLobby {
 	static private Game currentGame;
 	private int timerCounter;
-	Timeline counter;
+	private Timeline counter;
 	@FXML
 	private VBox ppt_list;
 	@FXML
@@ -59,7 +64,9 @@ public class ControlLobby {
 	private Label official_label;
 	@FXML
 	protected void initialize(){
-
+		/*
+		 * Generates a countdown timer.
+		 */
 		timerCounter = 60;
 		counter = new Timeline(new KeyFrame(
 				Duration.millis(1000),
@@ -67,11 +74,26 @@ public class ControlLobby {
 		counter.setCycleCount(Timeline.INDEFINITE);
 		counter.playFromStart();
 	}
-
+	/**
+	 * Generates a new game of a certain type.
+	 * @param opt -> the type of game that will be generated (1 = Running, 2 = Swimming,
+	 * 3 = Cycling)
+	 * @throws GenericGameException
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	public void generateGame(int opt) throws GenericGameException, ClassNotFoundException, SQLException{
 		currentGame = Reader.createNewGame(opt);
 	}
 
+	public Timeline getCounter(){
+		return counter;
+	}
+	/**
+	 * Description: Generates the dropdown list of athletes depending of the type of game
+	 * that was initialized.
+	 * @throws SQLException
+	 */
 	public void listOfAthletes() throws SQLException{
 		LinkedList<Athlete> athleteList = new LinkedList<Athlete>();
 		Athlete[] aux = Reader.readAthletes("name");
@@ -103,10 +125,11 @@ public class ControlLobby {
 				break;
 			}
 		}
-		//athlete_select.setValue("Random");
 		athlete_select.getSelectionModel().select(0);
 	}
-
+	/**
+	 * Description: Generates the list of officials available.
+	 */
 	public void listOfOfficials(){
 		int cnt = 0;
 		Official[] allOfficials = new Official[100];
@@ -127,7 +150,11 @@ public class ControlLobby {
 		//athlete_select.setValue("Random");
 		official_select.getSelectionModel().select(0);
 	}
-
+	/**
+	 * This function is called whenever a second passes to check if the countdown has 
+	 * finished.
+	 * @param ee
+	 */
 	public void countdown(ActionEvent ee){
 		if(timerCounter == 0){
 			counter.stop();
@@ -147,7 +174,11 @@ public class ControlLobby {
 		timerCounter--;
 		counter_container.setText(Integer.toString(timerCounter));
 	}
-
+	/**
+	 * Adds a new athlete to the current game depending on the choice selected in the 
+	 * ChoicePane node.
+	 * @param e -> Triggered by the "Add Athlete" button.
+	 */
 	public void addAthlete(ActionEvent e){
 		try {
 			Athlete curr;
@@ -168,7 +199,7 @@ public class ControlLobby {
 				if (athlete_select.getValue().getID() == "00"){
 					curr = (Athlete) ((SwimGame) currentGame).addSwimmer(); 
 				}else{
-					curr = (Athlete) ((SwimGame) currentGame).addSwimmer((Swimmer) athlete_select.getValue());
+					curr = (Athlete) ((SwimGame) currentGame).addSwimmer( athlete_select.getValue());
 				} 
 				if(!(curr instanceof Swimmer || curr instanceof SuperAthlete)){
 					throw new WrongTypeException();
@@ -180,7 +211,7 @@ public class ControlLobby {
 				if (athlete_select.getValue().getID() == "00"){
 					curr = (Athlete) ((CycleGame) currentGame).addCyclist();
 				}else{
-					curr = (Athlete) ((CycleGame) currentGame).addCyclist((Cyclist) athlete_select.getValue());
+					curr = (Athlete) ((CycleGame) currentGame).addCyclist( athlete_select.getValue());
 				}
 				if(!(curr instanceof Cyclist || curr instanceof SuperAthlete)){
 					throw new WrongTypeException();
@@ -189,6 +220,7 @@ public class ControlLobby {
 				line.getStyleClass().add("ppt_line");
 				ppt_list.getChildren().add(line);
 			}
+			System.out.println("A new Athlete was added to the race.");
 		} catch (GameFullException e1) {
 			showError(2);
 			//System.out.println("Cannot add more participants to this game");
@@ -204,7 +236,10 @@ public class ControlLobby {
 			e1.printStackTrace();
 		}
 	}
-
+	/**
+	 * Sets the official for the game according to the selected option.
+	 * @param e -> Triggered by the "Set Official" button.
+	 */
 	public void setOfficial(ActionEvent e){
 		error_msg.setText("");
 		if (official_select.getValue().getID() == "00"){
@@ -216,6 +251,7 @@ public class ControlLobby {
 					currentGame.setOfficial((Official) official_select.getValue());
 					official_label.setVisible(true);
 					official_label.setText(official_select.getValue().getName());
+					System.out.println("An official has been selected for the game.");
 				}else{
 					throw new WrongTypeException();
 				}
@@ -226,7 +262,11 @@ public class ControlLobby {
 		}
 
 	}
-
+	/**
+	 * Event that starts the current game. Must validate first using exceptions. Each 
+	 * exception will generate a message for the user.
+	 * @param e
+	 */
 	public void clickStart(ActionEvent e){
 		try{
 			startRace();
@@ -238,7 +278,11 @@ public class ControlLobby {
 			showError(4);
 		}
 	}
-
+	/**
+	 * Starts the current game.
+	 * @throws TooFewAthleteException
+	 * @throws NoRefereeException
+	 */
 	public void startRace() throws TooFewAthleteException, NoRefereeException{
 		if(currentGame.getOfficial() == null){
 			throw new NoRefereeException();
@@ -275,12 +319,17 @@ public class ControlLobby {
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
-				}	
+				}
+				System.out.println("The game will start...");
 			}else{
 				throw new TooFewAthleteException();
 			}
 		}
 	}
+	/**
+	 * Shows the error on screen depending on the parameter sent.
+	 * @param e -> Error code.
+	 */
 	public void showError(int e){
 		if(e == 1){
 			error_msg.setText("At least 4 participants are necesary for a game to run.");
@@ -292,6 +341,11 @@ public class ControlLobby {
 			error_msg.setText("An official must be assigned");
 		}
 	}
+	/**
+	 * Cancels the current game if the timeout has expired and not enough athletes or
+	 * officials have signed up.
+	 * @param reason
+	 */
 	public void cancelGame(int reason){
 		try {
 
@@ -308,6 +362,7 @@ public class ControlLobby {
 			cntllr.setMessage(reason);
 			errorStage.show();
 			ppt_list.getScene().getWindow().hide();
+			System.out.println("The game has timed out and will be cancelled.");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

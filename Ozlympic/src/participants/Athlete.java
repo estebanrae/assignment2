@@ -15,18 +15,18 @@ public abstract class Athlete extends Participant{
 	private int points = 0;
 	private int place;
 	private double speed;
-
+	/*
+	 * All constructors for this class generate a random speed for the athlete.
+	 */
 	public Athlete(String ID, String name, int age, String state, int points){
 		super(ID, name, age, state);
 		this.points = points;
 		setRandomSpeed();
 	}
 	public Athlete(String ID, String name, int age, String state, int points, double current_score, int place){
-		super(ID, name, age, state);
-		this.points = points;
+		this(ID, name, age, state, points);
 		this.current_score = current_score;
 		this.place = place;
-		setRandomSpeed();
 	}
 	public Athlete(String ID, String name, int age, String state){
 		super(ID, name, age, state);

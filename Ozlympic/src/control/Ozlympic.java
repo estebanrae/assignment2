@@ -7,7 +7,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
+/**
+ * This is the main class for the program. it generates the primary stage and holds the
+ * application's start() method. This will display the main stage.
+ * @author estebanramirez
+ *
+ */
 public class Ozlympic extends Application {
 	
 	

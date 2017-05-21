@@ -2,7 +2,13 @@ package control;
 
 import javafx.util.StringConverter;
 import participants.Athlete;
-
+/**
+ * Description: This is a helper class used to specify which field should be displayed
+ * in the ChoicePane, in this case the ChoicePane will hold Athlete objects but only 
+ * display the name of the athlete.
+ * @author estebanramirez
+ *
+ */
 public class AthlConverter extends StringConverter<Athlete>{
 	  
 	@Override

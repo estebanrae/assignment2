@@ -1,18 +1,28 @@
 package control;
 
+import java.io.IOException;
+
 import games.CycleGame;
 import games.Game;
 import games.RunningGame;
 import games.SwimGame;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import storage.Reader;
-
+/**
+ * This class generates the tables which display the results for all the races that have
+ * happened.
+ * @author estebanramirez
+ *
+ */
 public class ResultsController {
 	@FXML
 	private VBox run_results;
@@ -20,12 +30,28 @@ public class ResultsController {
 	private VBox swim_results;
 	@FXML
 	private VBox cycle_results;
-	
-	
-	public void initialize(){
-		Game[] games = null;
-		games = Reader.readGames();
 
+
+	public void initialize() throws IOException{
+		Game[] games = null;
+		System.out.println("Results for the race are displayed.");
+		games = Reader.readGames();
+		if(games == null){
+			Stage errorStage = new Stage();
+			FXMLLoader root;
+			root = new FXMLLoader(getClass().getResource("/graphics/Error.fxml"));
+			Scene sc1;
+			sc1 = new Scene(root.load());
+			//sc1.getStylesheets().add(getClass().getResource("/graphics/Error.css").toExternalForm());
+			errorStage.setScene(sc1);
+			errorStage.setResizable(false);
+			errorStage.setTitle("Error");
+			ErrorController cntllr = root.<ErrorController>getController();
+			cntllr.setMessage(3);
+			errorStage.show();
+			errorStage.setAlwaysOnTop(true);
+			return;
+		}
 		for (Game cur : games){
 			VBox cont = new VBox();
 			HBox titlebox = new HBox();
@@ -79,7 +105,6 @@ public class ResultsController {
 				cycle_results.getChildren().add(cont);
 			}
 		}
-
 	}
-	
+
 }
