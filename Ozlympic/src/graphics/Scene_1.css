@@ -1,0 +1,22 @@
+.button{
+	-fx-text-fill: #FFF;
+	-fx-opacity: 1;
+	-fx-background-color: rgba(0,151,167, 1);
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 0, 0);
+}
+
+.button:hover{
+	/*
+	-fx-opacity: 0.9;
+	-fx-background-color: rgba(0,151,167, 0.8);*/
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 1, 1);
+	-fx-cursor: hand;
+}
+
+.button:pressed{
+	-fx-effect: dropshadow(three-pass-box, #263238, 2, 0.1, 0, 0);
+}
+
+.oz_title{
+	-fx-font-weight: bold;
+}

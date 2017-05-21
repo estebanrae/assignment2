@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="600.0" prefWidth="600.0" style="-fx-background-color: #607D8B;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="control.ResultsController">
+   <children>
+      <VBox prefHeight="600.0" prefWidth="600.0">
+         <children>
+            <Label alignment="CENTER" prefHeight="68.0" prefWidth="603.0" styleClass="main_title" text="Results" />
+            <ScrollPane fx:id="result_container" prefHeight="534.0" prefWidth="600.0" style="-fx-background-color: #607D8B;">
+               <content>
+                  <Pane prefWidth="582.0" style="-fx-background-color: #607D8B;">
+                     <children>
+                        <VBox fx:id="result_cont" prefWidth="578.0">
+                           <children>
+                              <Label alignment="CENTER" prefHeight="40.0" prefWidth="578.0" styleClass="sub_title" text="Running Games" />
+                              <VBox fx:id="run_results" prefHeight="200.0" prefWidth="100.0" />
+                              <Label alignment="CENTER" prefHeight="40.0" prefWidth="578.0" styleClass="sub_title" text="Swimming Games" />
+                              <VBox fx:id="swim_results" prefHeight="200.0" prefWidth="100.0" />
+                              <Label alignment="CENTER" prefHeight="40.0" prefWidth="578.0" styleClass="sub_title" text="Cycling Games" />
+                              <VBox fx:id="cycle_results" prefHeight="200.0" prefWidth="100.0" />
+                           </children>
+                           <padding>
+                              <Insets left="20.0" right="20.0" />
+                           </padding>
+                        </VBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                  </Pane>
+               </content>
+            </ScrollPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

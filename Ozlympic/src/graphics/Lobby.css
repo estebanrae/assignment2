@@ -1,0 +1,77 @@
+.ppt_title{
+	-fx-font-size: 20;
+	-fx-text-fill: #FFF;
+}
+
+.add_btn{
+	-fx-font-size: 15;
+}
+
+.add_btn,
+.start_btn{
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 0, 0);
+	-fx-background-color: rgba(0,151,167, 1);
+	-fx-text-fill: #FFF;
+}
+
+.add_btn:hover,
+.start_btn:hover{
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 1, 1);
+	-fx-cursor: hand;
+}
+
+.add_btn:pressed,
+.start_btn:pressed{
+	-fx-effect: dropshadow(three-pass-box, #263238, 2, 0.1, 0, 0);
+}
+
+.start_btn{
+	-fx-font-size: 20;
+	-fx-background-color: rgba(0,151,167, 1);
+	
+}
+
+.auto_text{
+	-fx-font-size: 15;
+	-fx-text-fill: #FFF;
+}
+
+.ppt_list{
+	-fx-background-color: #CFD8DC;
+}
+
+.ppt_line{
+	-fx-font-size: 15;
+	-fx-padding:  10;
+	-fx-pref-width: 404;
+	-fx-alignment: center;
+	-fx-text-fill: #000;
+ 	-fx-border-color: #37474F;
+	-fx-border-radius: 30;
+	-fx-background-color: #B2EBF2;
+	-fx-background-radius: 30;
+}
+
+.ppt_container{
+	-fx-padding:  0 35 0 35;
+	-fx-spacing: 5;
+}
+
+.counter_no{
+	-fx-font-size: 40;
+	-fx-text-fill: #FFF;
+	-fx-background-color: #78909C; 
+}
+
+.error_msg{
+	-fx-text-fill: #E57373;
+}
+
+.off_container{
+	-fx-padding:  0 35 0 35;
+}
+
+.off_line{
+	-fx-background-color: #2FBE2B;
+	visibility: hidden;
+}

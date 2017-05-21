@@ -1,0 +1,23 @@
+.points_cell{
+	-fx-background-color: #90A4AE;
+	-fx-text-fill: #ECEFF1;	
+	-fx-padding: 10 0;
+}
+
+.grid{
+	-fx-vgap: 2;
+	-fx-hgap: 2;
+}
+
+.title_text{
+	-fx-font-size: 22;
+	-fx-text-fill: #ECEFF1;
+	-fx-border-width: 0 0 2 0;
+	-fx-border-color:#37474F;
+}
+
+.title_cell{
+	-fx-font-size: 15;
+	-fx-font-weight: bolder;
+	-fx-text-fill: #FFB74D;
+}

@@ -1,0 +1,41 @@
+.title_box{
+	-fx-spacing: 100;
+	-fx-padding: 15;
+	-fx-text-fill: #ECEFF1;
+}
+
+.win_cell{
+	-fx-background-color: #90A4AE;
+	-fx-text-fill: #ECEFF1;
+}
+
+.grid_res{
+	-fx-vgap: 2;
+	-fx-hgap: 2;
+}
+
+.title{
+	-fx-font-size: 15;
+	-fx-font-weight: bolder;
+	-fx-text-fill: #FFB74D;
+}
+
+.head_text{
+	-fx-font-size: 15;
+	-fx-text-fill: #CFD8DC;
+}
+
+.main_title{
+	-fx-font-size: 22;
+	-fx-text-fill: #ECEFF1;
+	-fx-border-width: 0 0 2 0;
+	-fx-border-color:#37474F;
+}
+
+.sub_title{
+	-fx-font-size: 17;
+	-fx-border-width: 0 0 1 0;
+	-fx-border-color:#37474F;
+	-fx-text-fill: #ECEFF1;
+	-fx-padding: 50 0 10 0;
+}

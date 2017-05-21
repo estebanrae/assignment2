@@ -1,0 +1,61 @@
+.title_main{
+	-fx-text-fill: #FFF;
+}
+
+.top_btn{
+	-fx-font-size: 20;
+	/*-fx-background-color: #37474F;*/
+	-fx-background-color: rgba(55,71,79, 0.4);
+	
+}
+.top_btn,
+.bottom_btn{
+	-fx-text-fill: #FFF;
+}
+
+.top_btn:hover{
+	-fx-background-color: rgba(55,71,79, 0.2);
+}
+
+.bottom_btn{
+	-fx-font-size: 15;
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 0, 0);
+	-fx-background-color: rgba(0,151,167, 1);
+}
+
+.bottom_btn:hover{
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 1, 1);
+}
+
+.bottom_btn:pressed{
+	-fx-effect: dropshadow(three-pass-box, #263238, 2, 0.1, 0, 0);
+}
+
+.top_btn:hover,
+.bottom_btn:hover{
+	/*-fx-opacity: 0.9;*/
+	-fx-cursor: hand;
+	
+}
+
+#op_btn1{
+	/*-fx-effect: dropshadow(three-pass-box, black, 10, 0.1, 0, 0);*/ 
+}
+
+.back_btn{
+	-fx-background-size: 212 146;
+	-fx-background-position: center center;
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 0, 0);
+}
+
+#back_btn_1{
+	-fx-background-image: url("file:resources/sprinter.jpg");
+}
+
+#back_btn_2{
+	-fx-background-image: url("file:resources/swimmer.jpg");
+}
+
+#back_btn_3{
+	-fx-background-image: url("file:resources/cyclist.jpg");
+}

@@ -1,0 +1,83 @@
+.AnchorPane{
+	-fx-background-color: #607D8B;
+}
+
+.title{
+	-fx-font-size: 25;
+	-fx-text-fill: #FFF;
+}
+
+.road{
+	-fx-pref-height: 150;
+	-fx-pref-width: 200;
+	-fx-background-size: auto stretch;
+	-fx-background-position: center center;
+	-fx-background-image: url("file:resources/road.png");
+	-fx-background-repeat: repeat-x;
+	/*-fx-alignment: center-left;*/
+}
+
+.runner{
+	-fx-alignment: center-left;
+}
+
+.name_label{
+	/*-fx-alignment: center-left;*/
+	-fx-background-color: #37474F;
+	-fx-text-fill: #FFFFFF; 
+}
+
+.result_container{
+	-fx-padding: 10;
+}
+.result_title{
+	-fx-text-fill: #FFFFFF; 
+	-fx-font-size: 15;
+}
+
+.result_cell{
+	-fx-background-color: #CFD8DC;
+	-fx-border-color: #37474F;
+}
+
+.ppt_result{
+	-fx-pref-height: 100;
+	-fx-alignment: center-left;
+}
+
+.end_shadowbox{
+	visibility: hidden;
+	-fx-background-color:rgb(55,71,79, 0.6);
+}
+.shadow_open{
+	visibility: visible;
+}
+
+.game_over{
+	-fx-text-fill: #FFFFFF; 
+	-fx-font-size: 45;
+}
+
+.end_text{
+	-fx-text-fill: #FFFFFF; 
+	-fx-font-size: 25;
+}
+
+
+.ok_button{
+	-fx-text-fill: #FFFFFF;
+	-fx-font-size: 15;
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 0, 0);
+	-fx-background-color: rgba(0,151,167, 1);
+}
+
+.ok_button:hover{
+	-fx-effect: dropshadow(three-pass-box, #263238, 5, 0.1, 1, 1);
+}
+
+.ok_button:pressed{
+	-fx-effect: dropshadow(three-pass-box, #263238, 2, 0.1, 0, 0);
+}
+
+.result_box{
+}
